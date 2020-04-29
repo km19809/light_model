@@ -1,20 +1,21 @@
-import torch
-from torchtext import data
-from torchtext.data import TabularDataset
-from torchtext.data import BucketIterator
-from torchtext.vocab import Vectors
-from konlpy.tag import Mecab
-import re
-from Styling import styling, make_special_token
 import argparse
+import re
+
+import torch
+from konlpy.tag import Mecab
 from torch import nn
+from torchtext import data
+from torchtext.data import BucketIterator
+from torchtext.data import TabularDataset
+
+from Styling import styling, make_special_token
 from generation import inference
 
 SEED = 1234
 
 # argparse 정의
 parser = argparse.ArgumentParser()
-parser.add_argument('--max_len', type=int, default=40) # max_len 크게 해야 오류 안 생김.
+parser.add_argument('--max_len', type=int, default=40)  # max_len 크게 해야 오류 안 생김.
 parser.add_argument('--batch_size', type=int, default=256)
 parser.add_argument('--num_epochs', type=int, default=22)
 parser.add_argument('--warming_up_epochs', type=int, default=5)
@@ -28,11 +29,13 @@ parser.add_argument('--per_soft', type=bool, default=False)
 parser.add_argument('--per_rough', type=bool, default=True)
 args = parser.parse_args()
 
+
 def acc(yhat, y):
     with torch.no_grad():
-        yhat = yhat.max(dim=-1)[1] # [0]: max value, [1]: index of max value
-        acc = (yhat == y).float()[y != 1].mean() # padding은 acc에서 제거
-    return acc
+        yhat = yhat.max(dim=-1)[1]  # [0]: max value, [1]: index of max value
+        _acc = (yhat == y).float()[y != 1].mean()  # padding은 acc에서 제거
+    return _acc
+
 
 def test(model, iterator, criterion):
     total_loss = 0
@@ -67,15 +70,16 @@ def test(model, iterator, criterion):
 
     return total_loss.data.cpu().numpy() / iter_num, te_acc.data.cpu().numpy() / iter_num
 
+
 # tokenizer
 def tokenizer1(text):
-    result_text = re.sub('[-=+.,#/\:$@*\"※&%ㆍ!?』\\‘|\(\)\[\]\<\>`\'…》;]', '', text)
+    result_text = re.sub(r'[-=+.,#/\:$@*\"※&%ㆍ!?』\\‘|\(\)\[\]\<\>`\'…》;]', '', text)
     a = Mecab().morphs(result_text)
-    return ([a[i] for i in range(len(a))])
+    return [a[i] for i in range(len(a))]
+
 
 # 데이터 전처리 및 loader return
 def data_preprocessing(args, device):
-
     # ID는 사용하지 않음. SA는 Sentiment Analysis 라벨(0,1) 임.
     ID = data.Field(sequential=False,
                     use_vocab=False)
@@ -118,6 +122,7 @@ def data_preprocessing(args, device):
 
     return TEXT, LABEL, test_loader
 
+
 def main(TEXT, LABEL):
     criterion = nn.CrossEntropyLoss(ignore_index=LABEL.vocab.stoi['<pad>'])
 
@@ -130,19 +135,12 @@ def main(TEXT, LABEL):
         else:
             print("\t", key, ":", value)
 
-    from model import Transformer, GradualWarmupScheduler
+    from model import Transformer
 
     model = Transformer(args, TEXT, LABEL)
-
-    per = int(input("성격선택. 1:soft, 2:rough (숫자치고 엔터) "))
-
-    if per==1:
-        print("soft 성격 선택")
+    if args.per_soft:
         sorted_path = 'sorted_model-soft.pth'
-        print("ERROR -> soft성격은 지금 안 됩니다. 2번을 클릭해주세요.")
-        exit()
-    elif per==2:
-        print("rough 성격 선택")
+    else:
         sorted_path = 'sorted_model-rough.pth'
     model.to(device)
 
@@ -152,13 +150,14 @@ def main(TEXT, LABEL):
     test_loss, test_acc = test(model, test_loader, criterion)  # 아
     print(f'==test_loss : {test_loss:.3f} | test_acc: {test_acc:.3f}==')
     print("\t-----------------------------")
-    while (True):
+    while True:
         inference(device, args, TEXT, LABEL, model)
         print("\n")
 
     return 0
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     print("-준비중-")
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     TEXT, LABEL, test_loader = data_preprocessing(args, device)
