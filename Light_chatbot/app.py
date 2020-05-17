@@ -31,7 +31,7 @@ LABEL = data.Field(sequential=True,
                    )
 text_specials, label_specials = make_special_token(False)
 train_data, _ = data.TabularDataset.splits(
-    path='.', train='chatbot_0325_ALLLABEL_train.txt', format='tsv',
+    path='.', train='chatbot_0325_ALLLABEL_train.txt', test='chatbot_0325_ALLLABEL_test.txt', format='tsv',
     fields=[('id', ID), ('text', TEXT), ('target_text', LABEL), ('SA', SA)], skip_header=True
 )
 TEXT.build_vocab(train_data, max_size=15000, specials=text_specials)
