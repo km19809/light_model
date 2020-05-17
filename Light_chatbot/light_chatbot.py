@@ -1,15 +1,14 @@
 import argparse
-import re
 
 import torch
-from konlpy.tag import Mecab
 from torch import nn
 from torchtext import data
 from torchtext.data import BucketIterator
 from torchtext.data import TabularDataset
 
 from Styling import styling, make_special_token
-from generation import inference
+from generation import inference, tokenizer1
+from model import Transformer
 
 SEED = 1234
 
@@ -30,14 +29,14 @@ parser.add_argument('--per_rough', type=bool, default=True)
 args = parser.parse_args()
 
 
-def acc(yhat, y):
+def acc(yhat: torch.Tensor, y: torch.Tensor):
     with torch.no_grad():
         yhat = yhat.max(dim=-1)[1]  # [0]: max value, [1]: index of max value
         _acc = (yhat == y).float()[y != 1].mean()  # padding은 acc에서 제거
     return _acc
 
 
-def test(model, iterator, criterion):
+def test(model: Transformer, iterator, criterion: nn.CrossEntropyLoss):
     total_loss = 0
     iter_num = 0
     te_acc = 0
@@ -51,7 +50,7 @@ def test(model, iterator, criterion):
 
             # emotion 과 체를 반영
             enc_input, dec_input, dec_outputs = \
-                styling(enc_input, dec_input, dec_output, dec_outputs, enc_label, args, TEXT, LABEL)
+                styling(enc_input, dec_input, dec_output, dec_outputs, enc_label, args.max_len, args.per_soft, args.per_rough, TEXT, LABEL)
 
             y_pred = model(enc_input, dec_input)
 
@@ -69,13 +68,6 @@ def test(model, iterator, criterion):
             te_acc += test_acc
 
     return total_loss.data.cpu().numpy() / iter_num, te_acc.data.cpu().numpy() / iter_num
-
-
-# tokenizer
-def tokenizer1(text):
-    result_text = re.sub(r'[-=+.,#/\:$@*\"※&%ㆍ!?』\\‘|\(\)\[\]\<\>`\'…》;]', '', text)
-    a = Mecab().morphs(result_text)
-    return [a[i] for i in range(len(a))]
 
 
 # 데이터 전처리 및 loader return
@@ -118,7 +110,6 @@ def data_preprocessing(args, device):
 
     train_loader = BucketIterator(dataset=train_data, batch_size=args.batch_size, device=device, shuffle=True)
     test_loader = BucketIterator(dataset=test_data, batch_size=args.batch_size, device=device, shuffle=True)
-    # BucketIterator(dataset=traing_data check)
 
     return TEXT, LABEL, test_loader
 
@@ -135,9 +126,7 @@ def main(TEXT, LABEL):
         else:
             print("\t", key, ":", value)
 
-    from model import Transformer
-
-    model = Transformer(args, TEXT, LABEL)
+    model = Transformer(args.embedding_dim, args.nhead, args.nlayers, args.dropout, TEXT, LABEL)
     if args.per_soft:
         sorted_path = 'sorted_model-soft.pth'
     else:
@@ -151,10 +140,9 @@ def main(TEXT, LABEL):
     print(f'==test_loss : {test_loss:.3f} | test_acc: {test_acc:.3f}==')
     print("\t-----------------------------")
     while True:
-        inference(device, args, TEXT, LABEL, model)
+        sentence = input("문장을 입력하세요 : ")
+        inference(device, args.max_len, TEXT, LABEL, model, sentence)
         print("\n")
-
-    return 0
 
 
 if __name__ == '__main__':
