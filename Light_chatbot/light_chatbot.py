@@ -129,7 +129,7 @@ def data_preprocessing(args, device):
     )
 
     # TEXT, LABEL 에 필요한 special token 만듦.
-    text_specials, label_specials = make_special_token(args)
+    text_specials, label_specials = make_special_token(args.per_rough)
 
     TEXT.build_vocab(train_data, max_size=15000, specials=text_specials)
     LABEL.build_vocab(train_data, max_size=15000, specials=label_specials)
@@ -164,7 +164,6 @@ def main(TEXT, LABEL, arguments):
         best_valid_loss = float('inf')
         for epoch in range(arguments.num_epochs):
             torch.manual_seed(SEED)
-            scheduler.step(epoch)
             start_time = time.time()
 
             # train, validation
@@ -173,6 +172,7 @@ def main(TEXT, LABEL, arguments):
                       arguments.per_rough)
             valid_loss, valid_acc = test(model, test_loader, criterion)
 
+            scheduler.step(epoch)
             # time cal
             end_time = time.time()
             elapsed_time = end_time - start_time
@@ -206,7 +206,7 @@ def main(TEXT, LABEL, arguments):
     print("\t-----------------------------")
     while True:
         sentence = input("문장을 입력하세요 : ")
-        inference(device, args.max_len, TEXT, LABEL, model, sentence)
+        print(inference(device, args.max_len, TEXT, LABEL, model, sentence))
         print("\n")
 
 

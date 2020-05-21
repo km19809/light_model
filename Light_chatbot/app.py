@@ -6,6 +6,7 @@ from Styling import make_special_token
 from model import Transformer
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 device = torch.device('cpu')
 max_len = 40
 ID = data.Field(sequential=False,
@@ -48,7 +49,7 @@ soft_model.load_state_dict(torch.load('sorted_model-soft.pth', map_location=devi
 
 @app.route('/soft', methods=['POST'])
 def soft():
-    if request.is_json():
+    if request.is_json:
         sentence = request.json["data"]
         return jsonify({"data": inference(device, max_len, TEXT, LABEL, soft_model, sentence)}), 200
     else:
@@ -60,4 +61,4 @@ def soft():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
