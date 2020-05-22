@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Emotional Chatbot with Styler</title>
+        <script src="app.js"></script>
+        <link rel="stylesheet" type="text/css" href="chat.css" />
+    </head>
+    <body onload="setDefault()">
+        <ul id="chat_list" class="list no-bullets">
+<li class="chat-bubble mine">(대충 적당한 대사)</li>
+<li class="chat-bubble bots">(대충 알맞은 답변)</li>
+        </ul>
+        <div class="input-holder">
+        <input type="text" id="chat_input" autofocus/>
+        <input type="button" id="send_button" class="button" value="↵" onclick="send()" disabled>
+    </div>
+    </body>
+</html>

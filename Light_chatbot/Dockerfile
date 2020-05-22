@@ -26,10 +26,10 @@ RUN pip install hgtk chatspace
 RUN curl -L https://raw.githubusercontent.com/konlpy/konlpy/master/scripts/mecab.sh | bash
 # install styling chatbot by BM-K
 RUN git clone https://github.com/km19809/light_model.git
-RUN pip install -r light_model/Light_chatbot/requirements.txt
+RUN pip install -r light_model/Light_chatbot/api/requirements.txt
 
 # Add non-root user
 RUN adduser --disabled-password --gecos "" user
 
 # Reset Workdir
-WORKDIR /light_model/Light_chatbot
+WORKDIR /light_model/Light_chatbot/api
