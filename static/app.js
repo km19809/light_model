@@ -10,7 +10,7 @@ function send() {
 
   /* ajax request */
   var request = new XMLHttpRequest();
-  request.open("POST", `${window.location.host}/api/soft`, true);
+  request.open("POST", `${window.location.protocol}//${window.location.host}/api/soft`, true);
   request.onreadystatechange = function() {
     if (request.readyState !== 4 || Math.floor(request.status /100) !==2) return;
     var bot_chat = document.createElement("li");
