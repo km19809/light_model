@@ -1,0 +1,68 @@
+ul.no-bullets {
+    list-style-type: none; /* Remove bullets */
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margins */
+  }
+
+.chat-bubble {
+  position: relative;
+  padding: 0.5em;
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+  border-radius: 0.4em;
+  color: white;
+}
+.mine {
+  background: #00aabb;
+}
+.bots {
+  background: #cc78c5;
+}
+
+.chat-bubble:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border: 0.625em solid transparent;
+  border-top: 0;
+  margin-top: -0.312em;
+  
+}
+.chat-bubble.mine:after {
+  right: 0;
+
+  border-left-color: #00aabb;
+  border-right: 0;
+  margin-right: -0.625em;
+}
+
+.chat-bubble.bots:after {
+  left: 0;
+
+  border-right-color: #cc78c5;
+  border-left: 0;
+  margin-left: -0.625em;
+}
+
+#chat_input {
+    width: 90%;
+}
+
+#send_button {
+
+    width: 5%;
+    border-radius: 0.4em;
+    color: white;
+    background-color: rgb(15, 145, 138);
+}
+
+.input-holder {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0.25em;
+    background-color: lightseagreen;
+}
