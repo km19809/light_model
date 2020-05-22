@@ -5,7 +5,9 @@ from generation import inference, tokenizer1
 from Styling import make_special_token
 from model import Transformer
 
-app = Flask(__name__)
+app = Flask(__name__,
+            static_url_path='', 
+            static_folder='static',)
 app.config['JSON_AS_ASCII'] = False
 device = torch.device('cpu')
 max_len = 40
@@ -47,7 +49,7 @@ soft_model.load_state_dict(torch.load('sorted_model-soft.pth', map_location=devi
 # rough_model.load_state_dict(torch.load('sorted_model-rough.pth', map_location=device)['model_state_dict'])
 
 
-@app.route('/soft', methods=['POST'])
+@app.route('/api/soft', methods=['POST'])
 def soft():
     if request.is_json:
         sentence = request.json["data"]
